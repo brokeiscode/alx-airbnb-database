@@ -15,7 +15,7 @@ The database design diagram has been normalized to ensure the database is in the
 | ----------------------------- |
 | CREATE TABLE Property (       |
 | property_id uuid PRIMARY KEY, |
-| host_id uuid NOT NULL,        |
+| host_id uuid FOREIGN KEY,     |
 | name varchar(255),            |
 | description text,             |
 | street_name varchar(255),     |
@@ -27,7 +27,6 @@ The database design diagram has been normalized to ensure the database is in the
 | created_at timestamp,         |
 | updated_at timestamp          |
 | );                            |
-| ----------------------------- |
 
 - Each part of the address is atomic
 - Fully complies with 1NF
