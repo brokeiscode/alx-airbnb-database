@@ -41,20 +41,30 @@ FROM
 LIMIT 10;
 
 -- Generate bookings linked to different properties and guests
+DO $$
+BEGIN
+FOR i IN 1..15 LOOP
 INSERT INTO Booking (booking_id, property_id, user_id, start_date, end_date, total_price, status)
-SELECT 
+SELECT
        gen_random_uuid(), 
        p.property_id,
        g.user_id,
-       CURRENT_DATE + (i * 2 || ' days')::INTERVAL,
-       CURRENT_DATE + (i * 2 + 3 || ' days')::INTERVAL,
-       500 + (i * 50),
-       CASE WHEN i % 3 = 0 THEN 'canceled' WHEN i % 2 = 0 THEN 'confirmed' ELSE 'pending' END::booking_status
-FROM 
-       (SELECT property_id FROM Property ORDER BY random() LIMIT 6) p,
-       (SELECT user_id FROM "User" WHERE role = 'guest' ORDER BY random() LIMIT 4) g,
-       generate_series(1, 15) AS i
+       CURRENT_DATE + (rand_vals.s || ' days')::INTERVAL AS start_date,
+       CURRENT_DATE + (rand_vals.s + rand_vals.q || ' days')::INTERVAL AS end_date,
+       p.pricepernight * q AS total_price,
+       (ARRAY['canceled','confirmed','pending'])[(floor(random() * 3) + 1)::INT]::booking_status
+FROM
+       (SELECT property_id,pricepernight FROM Property ORDER BY random() LIMIT 1) p,
+       (SELECT user_id FROM "User" WHERE role = 'guest' ORDER BY random() LIMIT 1) g,
+       -- generate_series(1, 15) AS i,
+       LATERAL (
+        SELECT 
+            floor(random() * 20 + 1)::INT AS s, 
+            floor(random() * 6 + 1)::INT AS q
+    ) AS rand_vals
 LIMIT 15;
+END LOOP;
+END $$;
 
 -- Generate payments linked to bookings
 INSERT INTO Payment (payment_id, booking_id, amount, payment_method)
@@ -87,10 +97,9 @@ SELECT
     gen_random_uuid(),
     b.property_id,
     b.user_id,
-    (1 + floor(random() * 4))::INT, -- Rating between 1 and 5
+    (1 + floor(random() * 5))::INT, -- Rating between 1 and 5
     CONCAT('Great stay, awesome place') -- More specific comment
 FROM
     Booking b
 ORDER BY
-    random()
-LIMIT 10;
+    random();
