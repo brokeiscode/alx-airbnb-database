@@ -8,7 +8,7 @@ CREATE TYPE booking_status AS ENUM ('pending', 'confirmed', 'canceled');
 CREATE TYPE payment_method_type AS ENUM ('credit_card', 'paypal', 'stripe');
 
 -- User Table
-CREATE TABLE "User" (
+CREATE TABLE User (
     user_id UUID PRIMARY KEY,
     first_name VARCHAR(255) NOT NULL,
     last_name VARCHAR(255) NOT NULL,
@@ -19,12 +19,12 @@ CREATE TABLE "User" (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX User_email_idx ON "User"(email);
+CREATE INDEX User_email_idx ON User(email);
 
 -- Property Table
 CREATE TABLE Property (
     property_id UUID PRIMARY KEY,
-    host_id UUID NOT NULL REFERENCES "User"(user_id),
+    host_id UUID NOT NULL REFERENCES User(user_id),
     name VARCHAR(255) NOT NULL,
     description TEXT NOT NULL,
     street_name VARCHAR(255) NOT NULL,
@@ -41,7 +41,7 @@ CREATE TABLE Property (
 CREATE TABLE Booking (
     booking_id UUID PRIMARY KEY,
     property_id UUID NOT NULL REFERENCES Property(property_id),
-    user_id UUID NOT NULL REFERENCES "User"(user_id),
+    user_id UUID NOT NULL REFERENCES User(user_id),
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
     total_price DECIMAL(12, 2) NOT NULL,
@@ -65,8 +65,8 @@ CREATE INDEX Payment_booking_idx ON Payment(booking_id);
 -- Message Table
 CREATE TABLE Message (
     message_id UUID PRIMARY KEY,
-    sender_id UUID NOT NULL REFERENCES "User"(user_id),
-    recipient_id UUID NOT NULL REFERENCES "User"(user_id),
+    sender_id UUID NOT NULL REFERENCES User(user_id),
+    recipient_id UUID NOT NULL REFERENCES User(user_id),
     message_body TEXT NOT NULL,
     sent_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -77,7 +77,7 @@ CREATE INDEX Message_sender_recipient_idx ON Message(sender_id, recipient_id);
 CREATE TABLE Review (
     review_id UUID PRIMARY KEY,
     property_id UUID NOT NULL REFERENCES Property(property_id),
-    user_id UUID NOT NULL REFERENCES "User"(user_id),
+    user_id UUID NOT NULL REFERENCES User(user_id),
     rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
     comment TEXT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
